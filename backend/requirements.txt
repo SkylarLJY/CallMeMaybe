@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+python-dotenv
+openai
+deepgram-sdk
+elevenlabs
+websockets
+pydantic
+pydantic-settings
