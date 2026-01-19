@@ -1,0 +1,9 @@
+{
+  "name": "callmemaybe",
+  "private": true,
+  "scripts": {
+    "build": "pnpm -r build",
+    "dev:frontend": "pnpm --filter frontend dev",
+    "dev:realtime": "pnpm --filter voice_agent cli:text"
+  }
+}
