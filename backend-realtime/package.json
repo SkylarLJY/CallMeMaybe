@@ -1,0 +1,33 @@
+{
+  "name": "voice_agent",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "eslint src/ && tsc",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix",
+    "start": "node --env-file=.env dist/server.js",
+    "cli:text": "node --env-file=.env dist/cli_text.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.28.0",
+  "dependencies": {
+    "@openai/agents": "^0.4.0",
+    "openai": "^6.16.0",
+    "ws": "^8.19.0",
+    "zod": "^4.3.5"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "@types/node": "^25.0.9",
+    "@types/ws": "^8.18.1",
+    "eslint": "^9.39.2",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.53.0"
+  }
+}
