@@ -1,57 +1,46 @@
 "use client";
 
-import { useState } from "react";
-import { Phone, PhoneOff } from "lucide-react";
+import { Phone, PhoneOff, Mic } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { TranscriptDisplay } from "@/components/TranscriptDisplay";
+import { useAudioConnection } from "@/hooks/useAudioConnection";
+import { useMicLevel } from "@/hooks/useMicLevel";
 
 export default function VoiceChat() {
-  const [isConnected, setIsConnected] = useState(false);
+  const { isConnected, isConnecting, status, transcripts, mediaStream, connect, disconnect } =
+    useAudioConnection();
+  const micLevel = useMicLevel(mediaStream);
 
   return (
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          <span>Voice Assistant</span>
-          <span
-            className={`w-2 h-2 rounded-full ${
-              isConnected ? "bg-green-500" : "bg-gray-400"
-            }`}
-          />
+          Voice Assistant
+          <span className={`w-2 h-2 rounded-full ${isConnected ? "bg-green-500" : "bg-gray-400"}`} />
         </CardTitle>
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {/* Transcript area */}
-        <div className="border rounded-lg p-4 h-80 overflow-y-auto bg-muted/30">
-          <p className="text-muted-foreground text-center text-sm">
-            Click Start to begin
-          </p>
-        </div>
+        <TranscriptDisplay transcripts={transcripts} status={status} />
 
-        {/* Controls */}
-        <div className="flex justify-center">
-          {!isConnected ? (
-            <Button
-              onClick={() => setIsConnected(true)}
-              size="lg"
-              className="gap-2"
-            >
-              <Phone className="w-4 h-4" />
-              Start
+        {isConnected ? (
+          <>
+            <div className="flex items-center justify-center gap-2">
+              <Mic className="w-4 h-4 text-muted-foreground" />
+              <div className="w-32 h-2 bg-muted rounded-full overflow-hidden">
+                <div className="h-full bg-green-500 transition-all duration-75" style={{ width: `${micLevel * 100}%` }} />
+              </div>
+            </div>
+            <Button onClick={disconnect} variant="destructive" size="lg" className="w-full gap-2">
+              <PhoneOff className="w-4 h-4" /> Stop
             </Button>
-          ) : (
-            <Button
-              onClick={() => setIsConnected(false)}
-              variant="destructive"
-              size="lg"
-              className="gap-2"
-            >
-              <PhoneOff className="w-4 h-4" />
-              Stop
-            </Button>
-          )}
-        </div>
+          </>
+        ) : (
+          <Button onClick={connect} disabled={isConnecting} size="lg" className="w-full gap-2">
+            <Phone className="w-4 h-4" /> {isConnecting ? "Connecting..." : "Start"}
+          </Button>
+        )}
       </CardContent>
     </Card>
   );
