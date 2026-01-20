@@ -1,5 +1,17 @@
 import { NextResponse } from "next/server";
 
+const sessionConfig = {
+  session: {
+    type: "realtime",
+    model: "gpt-realtime",
+    audio: {
+      output: {
+        voice: "verse",
+      },
+    },
+  },
+};
+
 export async function GET() {
   const apiKey = process.env.OPENAI_API_KEY;
 
@@ -12,17 +24,14 @@ export async function GET() {
 
   try {
     const response = await fetch(
-      "https://api.openai.com/v1/realtime/sessions",
+      "https://api.openai.com/v1/realtime/client_secrets",
       {
         method: "POST",
         headers: {
           Authorization: `Bearer ${apiKey}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          model: "gpt-4o-realtime-preview",
-          voice: "verse",
-        }),
+        body: JSON.stringify(sessionConfig),
       }
     );
 
