@@ -31,6 +31,10 @@ export function useTranscripts() {
         addTranscript("assistant", data.transcript);
       }
 
+      if (data.type === "response.content_part.done" && data.part?.type === "audio" && data.part?.transcript) {
+        addTranscript("assistant", data.part.transcript);
+      }
+
       // Handle text response
       if (data.type === "response.text.done") {
         addTranscript("assistant", data.text);

@@ -4,9 +4,15 @@ const sessionConfig = {
   session: {
     type: "realtime",
     model: "gpt-realtime",
+    instructions: "Always respond in English only, regardless of what language the user speaks.",
     audio: {
+      input: {
+        transcription: {
+          model: "whisper-1",
+        },
+      },
       output: {
-        voice: "verse",
+        voice: "shimmer",
       },
     },
   },
