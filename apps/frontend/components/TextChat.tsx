@@ -7,10 +7,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { TranscriptDisplay } from "@/components/TranscriptDisplay";
 import { useTextConnection } from "@/hooks/useTextConnection";
+import type { AgentPersona } from "@callmemaybe/agent-config";
 
-export default function TextChat() {
+interface TextChatProps {
+  persona: AgentPersona;
+}
+
+export default function TextChat({ persona }: TextChatProps) {
   const [textInput, setTextInput] = useState("");
-  const { isConnected, status, transcripts, sendTextMessage } = useTextConnection();
+  const { isConnected, status, transcripts, sendTextMessage } = useTextConnection(persona);
 
   const handleSend = () => {
     if (!textInput.trim()) return;

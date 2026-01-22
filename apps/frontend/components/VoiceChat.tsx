@@ -6,10 +6,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TranscriptDisplay } from "@/components/TranscriptDisplay";
 import { useAudioConnection } from "@/hooks/useAudioConnection";
 import { useMicLevel } from "@/hooks/useMicLevel";
+import type { AgentPersona } from "@callmemaybe/agent-config";
 
-export default function VoiceChat() {
+interface VoiceChatProps {
+  persona: AgentPersona;
+}
+
+export default function VoiceChat({ persona }: VoiceChatProps) {
   const { isConnected, isConnecting, status, transcripts, mediaStream, connect, disconnect } =
-    useAudioConnection();
+    useAudioConnection(persona);
   const micLevel = useMicLevel(mediaStream);
 
   return (

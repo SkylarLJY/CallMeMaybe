@@ -1,25 +1,37 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { buildSystemInstructions, DEFAULT_PERSONA, type AgentPersona } from "@callmemaybe/agent-config";
 
-const sessionConfig = {
-  session: {
-    type: "realtime",
-    model: "gpt-realtime",
-    instructions: "Always respond in English only, regardless of what language the user speaks.",
-    audio: {
-      input: {
-        transcription: {
-          model: "whisper-1",
+export async function POST(request: NextRequest) {
+  const apiKey = process.env.OPENAI_API_KEY;
+
+  // Get persona from request body
+  let persona: AgentPersona = DEFAULT_PERSONA;
+  try {
+    const body = await request.json();
+    if (body.persona?.ownerName) {
+      persona = body.persona;
+    }
+  } catch {
+    // Use default persona
+  }
+
+  const sessionConfig = {
+    session: {
+      type: "realtime",
+      model: "gpt-realtime",
+      instructions: buildSystemInstructions(persona),
+      audio: {
+        input: {
+          transcription: {
+            model: "whisper-1",
+          },
+        },
+        output: {
+          voice: "shimmer",
         },
       },
-      output: {
-        voice: "shimmer",
-      },
     },
-  },
-};
-
-export async function GET() {
-  const apiKey = process.env.OPENAI_API_KEY;
+  };
 
   if (!apiKey) {
     return NextResponse.json(

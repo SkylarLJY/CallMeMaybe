@@ -2,8 +2,9 @@
 
 import { useState, useRef, useCallback } from "react";
 import { useTranscripts } from "./useTranscripts";
+import type { AgentPersona } from "@callmemaybe/agent-config";
 
-export function useAudioConnection() {
+export function useAudioConnection(persona: AgentPersona) {
   const [isConnected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [status, setStatus] = useState("Click Start to begin");
@@ -38,7 +39,11 @@ export function useAudioConnection() {
       setIsConnecting(true);
       setStatus("Fetching token...");
 
-      const tokenResponse = await fetch("/api/token");
+      const tokenResponse = await fetch("/api/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ persona }),
+      });
       const data = await tokenResponse.json();
 
       if (!tokenResponse.ok) {
@@ -69,7 +74,9 @@ export function useAudioConnection() {
       // Data channel for events
       const dc = pc.createDataChannel("oai-events");
       dataChannel.current = dc;
-      dc.onopen = () => setStatus("Connected - speak now");
+      dc.onopen = () => {
+        setStatus("Connected - speak now");
+      };
       dc.onmessage = handleDataChannelMessage;
       dc.onclose = () => setStatus("Connection closed");
 
@@ -102,7 +109,7 @@ export function useAudioConnection() {
     } finally {
       setIsConnecting(false);
     }
-  }, [handleDataChannelMessage, cleanup]);
+  }, [persona, handleDataChannelMessage, cleanup]);
 
   const disconnect = useCallback(() => {
     cleanup();

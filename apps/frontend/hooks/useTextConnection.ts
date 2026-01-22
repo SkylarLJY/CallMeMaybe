@@ -2,13 +2,15 @@
 
 import { useState, useRef, useCallback, useEffect } from "react";
 import { useTranscripts } from "./useTranscripts";
+import type { AgentPersona } from "@callmemaybe/agent-config";
 
-export function useTextConnection() {
+export function useTextConnection(persona: AgentPersona) {
   const [isConnected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [status, setStatus] = useState("Type a message to start");
 
   const ws = useRef<WebSocket | null>(null);
+  const sessionReady = useRef(false);
   const { transcripts, addTranscript, clearTranscripts } = useTranscripts();
 
   const connect = useCallback(async () => {
@@ -19,7 +21,11 @@ export function useTextConnection() {
       setIsConnecting(true);
       setStatus("Connecting...");
 
-      const tokenResponse = await fetch("/api/token");
+      const tokenResponse = await fetch("/api/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ persona }),
+      });
       const data = await tokenResponse.json();
 
       if (!tokenResponse.ok) {
@@ -32,6 +38,7 @@ export function useTextConnection() {
       );
 
       socket.onopen = () => {
+        sessionReady.current = true;
         setStatus("Ready");
         setIsConnected(true);
         setIsConnecting(false);
@@ -45,6 +52,7 @@ export function useTextConnection() {
         }
 
         if (event.type === "error") {
+          console.error("OpenAI error:", event.error);
           setStatus(`Error: ${event.error?.message || "Unknown error"}`);
         }
       };
@@ -65,11 +73,12 @@ export function useTextConnection() {
       setStatus(`Error: ${error instanceof Error ? error.message : "Connection failed"}`);
       setIsConnecting(false);
     }
-  }, [isConnecting, addTranscript]);
+  }, [persona, isConnecting, addTranscript]);
 
   const disconnect = useCallback(() => {
     ws.current?.close();
     ws.current = null;
+    sessionReady.current = false;
     setIsConnected(false);
     clearTranscripts();
   }, [clearTranscripts]);
@@ -77,12 +86,12 @@ export function useTextConnection() {
   const sendTextMessage = useCallback(async (text: string) => {
     if (!text.trim()) return;
 
-    if (ws.current?.readyState !== WebSocket.OPEN) {
+    if (!sessionReady.current) {
       await connect();
-      // Wait for connection
+      // Wait for session to be configured
       await new Promise<void>((resolve) => {
         const check = setInterval(() => {
-          if (ws.current?.readyState === WebSocket.OPEN) {
+          if (sessionReady.current) {
             clearInterval(check);
             resolve();
           }
