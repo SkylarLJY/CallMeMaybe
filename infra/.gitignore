@@ -1,0 +1,24 @@
+# Terraform
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.backup
+*.tfstate.*.backup
+
+# Sensitive files
+terraform.tfvars
+*.auto.tfvars
+
+# Crash logs
+crash.log
+crash.*.log
+
+# SSH keys
+twilio-bridge-key
+twilio-bridge-key.pub
+
+# Generated files
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
