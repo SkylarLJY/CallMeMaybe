@@ -1,0 +1,8 @@
+callme.skylarliang.com {
+    reverse_proxy bridge:8080
+
+    log {
+        output stdout
+        format json
+    }
+}
