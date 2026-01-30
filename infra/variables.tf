@@ -62,3 +62,15 @@ variable "transcript_ia_transition_days" {
   type        = number
   default     = 30
 }
+
+# GitHub Configuration 
+variable "github_repo" {
+  description = "GitHub repository (e.g., username/repo)"
+  type        = string
+}
+
+variable "create_github_oidc" {
+  description = "Whether to create the GitHub OIDC provider (set to false if it already exists in your account)"
+  type        = bool
+  default     = true
+}

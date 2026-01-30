@@ -23,3 +23,7 @@ sender_email       = "noreply@yourdomain.com"
 # S3 Lifecycle (optional)
 transcript_retention_days     = 90
 transcript_ia_transition_days = 30
+
+# GitHub Configuration
+github_repo        = "username/CallMeMaybe"
+create_github_oidc = true  # Set to false if OIDC provider already exists in your AWS account
