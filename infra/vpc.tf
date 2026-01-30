@@ -34,14 +34,7 @@ resource "aws_security_group" "twilio_bridge" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # SSH access (restricted)
-  ingress {
-    description = "SSH"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = [var.ssh_allowed_cidr]
-  }
+  # SSH access via Tailscale only (no public SSH)
 
   # Allow all outbound traffic
   egress {

@@ -28,12 +28,6 @@ variable "ssh_public_key" {
   type        = string
 }
 
-variable "ssh_allowed_cidr" {
-  description = "CIDR block allowed for SSH access"
-  type        = string
-  default     = "0.0.0.0/0"
-}
-
 variable "domain_name" {
   description = "Domain name for Caddy SSL certificate"
   type        = string
