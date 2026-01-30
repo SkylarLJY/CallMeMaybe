@@ -3,3 +3,4 @@ S3_BUCKET=${s3_bucket}
 S3_TRANSCRIPT_PREFIX=transcripts/
 PORT=8080
 NODE_ENV=production
+BRIDGE_IMAGE=${bridge_image}

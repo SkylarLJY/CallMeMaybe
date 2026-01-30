@@ -1,0 +1,27 @@
+services:
+  caddy:
+    image: caddy:2
+    container_name: caddy
+    restart: unless-stopped
+    depends_on:
+      - bridge
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+  bridge:
+    image: ${BRIDGE_IMAGE:-twilio-bridge:latest}
+    container_name: bridge
+    restart: unless-stopped
+    expose:
+      - "8080"
+    env_file:
+      - .env
+
+volumes:
+  caddy_data:
+  caddy_config:

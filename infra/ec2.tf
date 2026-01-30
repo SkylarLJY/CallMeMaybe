@@ -38,9 +38,9 @@ resource "aws_iam_role" "ec2_role" {
   })
 }
 
-# IAM Policy for EC2 to write to S3
-resource "aws_iam_role_policy" "ec2_s3_policy" {
-  name = "${var.project_name}-ec2-s3-policy"
+# IAM Policy for EC2 to access S3 and ECR
+resource "aws_iam_role_policy" "ec2_policy" {
+  name = "${var.project_name}-ec2-policy"
   role = aws_iam_role.ec2_role.id
 
   policy = jsonencode({
@@ -57,6 +57,22 @@ resource "aws_iam_role_policy" "ec2_s3_policy" {
           aws_s3_bucket.transcripts.arn,
           "${aws_s3_bucket.transcripts.arn}/*"
         ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "ecr:GetAuthorizationToken"
+        ]
+        Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:BatchGetImage"
+        ]
+        Resource = aws_ecr_repository.twilio_bridge.arn
       }
     ]
   })
@@ -77,9 +93,15 @@ resource "aws_instance" "twilio_bridge" {
   iam_instance_profile   = aws_iam_instance_profile.ec2_profile.name
 
   user_data = templatefile("${path.module}/user_data.sh", {
-    domain_name = var.domain_name
-    s3_bucket   = aws_s3_bucket.transcripts.id
-    aws_region  = var.aws_region
+    caddyfile      = file("${path.module}/Caddyfile")
+    docker_compose = file("${path.module}/docker-compose.yml")
+    aws_region     = var.aws_region
+    ecr_url        = aws_ecr_repository.twilio_bridge.repository_url
+    env_file       = templatefile("${path.module}/.env.tpl", {
+      aws_region   = var.aws_region
+      s3_bucket    = aws_s3_bucket.transcripts.id
+      bridge_image = "${aws_ecr_repository.twilio_bridge.repository_url}:latest"
+    })
   })
 
   root_block_device {

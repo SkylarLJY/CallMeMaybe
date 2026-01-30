@@ -1,86 +1,43 @@
 #!/bin/bash
 set -e
 
-# Log all output
 exec > >(tee /var/log/user-data.log) 2>&1
 echo "Starting user data script at $(date)"
 
-# Update system
+# Update system and install Docker
 dnf update -y
-
-# Install Docker
 dnf install -y docker
 systemctl enable docker
 systemctl start docker
-
-# Add ec2-user to docker group
 usermod -aG docker ec2-user
 
-# Install Docker Compose
-DOCKER_COMPOSE_VERSION="v2.24.0"
-curl -L "https://github.com/docker/compose/releases/download/$${DOCKER_COMPOSE_VERSION}/docker-compose-linux-x86_64" -o /usr/local/bin/docker-compose
-chmod +x /usr/local/bin/docker-compose
-
-# Install Caddy
-dnf install -y 'dnf-command(copr)'
-dnf copr enable -y @caddy/caddy
-dnf install -y caddy
+# Install Docker Compose plugin
+mkdir -p /usr/local/lib/docker/cli-plugins
+curl -SL "https://github.com/docker/compose/releases/download/v2.24.0/docker-compose-linux-x86_64" -o /usr/local/lib/docker/cli-plugins/docker-compose
+chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
 
 # Create app directory
 mkdir -p /opt/twilio-bridge
-chown ec2-user:ec2-user /opt/twilio-bridge
+cd /opt/twilio-bridge
 
-# Create Caddyfile
-cat > /etc/caddy/Caddyfile <<'CADDYFILE'
-${domain_name} {
-    reverse_proxy localhost:8080
+# Write config files
+cat > Caddyfile <<'EOF'
+${caddyfile}
+EOF
 
-    log {
-        output file /var/log/caddy/access.log
-        format json
-    }
-}
-CADDYFILE
+cat > docker-compose.yml <<'EOF'
+${docker_compose}
+EOF
 
-# Create log directory for Caddy
-mkdir -p /var/log/caddy
-chown caddy:caddy /var/log/caddy
+cat > .env <<'EOF'
+${env_file}
+EOF
 
-# Enable and start Caddy
-systemctl enable caddy
-systemctl start caddy
+chown -R ec2-user:ec2-user /opt/twilio-bridge
 
-# Create environment file for the app
-cat > /opt/twilio-bridge/.env <<'ENVFILE'
-AWS_REGION=${aws_region}
-S3_BUCKET=${s3_bucket}
-S3_TRANSCRIPT_PREFIX=transcripts/
-ENVFILE
-
-# Create a placeholder docker-compose.yml
-cat > /opt/twilio-bridge/docker-compose.yml <<'COMPOSEFILE'
-version: '3.8'
-
-services:
-  app:
-    image: your-twilio-bridge-image:latest
-    restart: unless-stopped
-    ports:
-      - "8080:8080"
-    env_file:
-      - .env
-    environment:
-      - PORT=8080
-    # volumes:
-    #   - ./data:/app/data
-COMPOSEFILE
-
-chown ec2-user:ec2-user /opt/twilio-bridge/.env
-chown ec2-user:ec2-user /opt/twilio-bridge/docker-compose.yml
+# Login to ECR and start services
+aws ecr get-login-password --region ${aws_region} | docker login --username AWS --password-stdin ${ecr_url}
+docker compose pull
+docker compose up -d
 
 echo "User data script completed at $(date)"
-echo "Next steps:"
-echo "1. SSH to this instance"
-echo "2. cd /opt/twilio-bridge"
-echo "3. Update docker-compose.yml with your actual image"
-echo "4. Run: docker-compose up -d"
