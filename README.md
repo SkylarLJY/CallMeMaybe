@@ -4,56 +4,52 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Work in Progress** - This project is under active development.
-
 ## Overview
 
-CallMeMaybe is an AI-powered voice assistant that helps screen and manage incoming recruiter calls. It uses speech-to-text, large language models, and text-to-speech to have natural conversations and filter calls based on your preferences.
+CallMeMaybe is an AI-powered voice assistant that screens incoming recruiter calls. When someone calls your Twilio number, the AI answers, has a natural conversation, and emails you a transcript so you can decide whether to follow up.
 
-## Tech Stack
+## How It Works
 
-- **Backend**: Python / FastAPI
-- **Frontend**: Next.js (coming soon)
-- **Speech-to-Text**: Deepgram
-- **LLM**: OpenAI
-- **Text-to-Speech**: ElevenLabs
+1. Caller dials your Twilio phone number
+2. AI assistant answers and conducts a screening conversation
+3. Transcript is saved and emailed to you
+4. You review and decide whether to call back
 
-## Project Structure
-
-```
-callmemaybe/
-├── backend/      # FastAPI backend service
-├── frontend/     # Next.js frontend (coming soon)
-├── docs/         # Documentation
-└── scripts/      # Utility scripts
-```
-
-## Setup
+## Getting Started
 
 ### Prerequisites
 
-- Python 3.10+
-- Node.js 18+ (for frontend, coming soon)
+- Twilio account with a phone number
+- OpenAI API key
+- AWS account
 
-### Backend Setup
+### Deployment
+
+1. Deploy infrastructure to AWS:
+   ```bash
+   cd infra
+   terraform init
+   terraform apply
+   ```
+
+2. Configure Twilio webhook to point to your EC2 endpoint
+
+3. Set environment variables on EC2
+
+### Server Access
+
+The EC2 server is accessed via **Tailscale** (no public SSH):
 
 ```bash
-cd backend
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-pip install -r requirements.txt
-cp .env.example .env
-# Edit .env with your API keys
-uvicorn main:app --reload
+ssh ec2-user@<tailscale-ip>
 ```
 
-### Configuration
-
-Copy `backend/.env.example` to `backend/.env` and fill in your API keys:
-
-- `OPENAI_API_KEY` - For LLM-powered conversations
-- `DEEPGRAM_API_KEY` - For speech-to-text
-- `ELEVENLABS_API_KEY` - For text-to-speech
+To set up Tailscale on a new server:
+```bash
+curl -fsSL https://tailscale.com/install.sh | sh
+sudo systemctl enable --now tailscaled
+sudo tailscale up
+```
 
 ## License
 
