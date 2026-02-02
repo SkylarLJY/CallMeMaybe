@@ -9,6 +9,7 @@ import express from 'express';
 import { config, logConfig } from './config.js';
 import { getServiceInfo, getHealth } from './routes/health.js';
 import { handleWebhook, handleStatusCallback } from './routes/twilio.js';
+import { validateTwilioSignature } from './middleware/twilioAuth.js';
 
 const app = express();
 
@@ -26,9 +27,9 @@ app.use((req, _res, next) => {
 app.get('/', getServiceInfo);
 app.get('/health', getHealth);
 
-// Twilio routes
-app.post('/twilio/webhook', handleWebhook);
-app.post('/twilio/status', handleStatusCallback);
+// Twilio routes (with signature validation)
+app.post('/twilio/webhook', validateTwilioSignature, handleWebhook);
+app.post('/twilio/status', validateTwilioSignature, handleStatusCallback);
 
 // Start server
 app.listen(config.port, '0.0.0.0', () => {

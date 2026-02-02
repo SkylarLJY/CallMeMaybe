@@ -35,6 +35,19 @@ EOF
 
 chown -R ec2-user:ec2-user /opt/twilio-bridge
 
+# Install Tailscale
+curl -fsSL https://tailscale.com/install.sh | sh
+systemctl enable tailscaled
+systemctl start tailscaled
+
+# Auto-authenticate if auth key provided
+if [ -n "${tailscale_auth_key}" ]; then
+  tailscale up --authkey="${tailscale_auth_key}"
+  echo "Tailscale authenticated with auth key"
+else
+  echo "Tailscale installed - run 'sudo tailscale up' to authenticate"
+fi
+
 # Login to ECR and start services
 aws ecr get-login-password --region ${aws_region} | docker login --username AWS --password-stdin ${ecr_url}
 docker compose pull

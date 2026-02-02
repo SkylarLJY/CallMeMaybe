@@ -33,6 +33,19 @@ variable "domain_name" {
   type        = string
 }
 
+variable "twilio_auth_token" {
+  description = "Twilio Auth Token for webhook signature validation"
+  type        = string
+  sensitive   = true
+}
+
+variable "tailscale_auth_key" {
+  description = "Tailscale auth key for automatic authentication (optional)"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
 # Email Configuration
 variable "notification_email" {
   description = "Email address to receive call notifications"

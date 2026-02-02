@@ -93,14 +93,16 @@ resource "aws_instance" "twilio_bridge" {
   iam_instance_profile   = aws_iam_instance_profile.ec2_profile.name
 
   user_data = templatefile("${path.module}/user_data.sh", {
-    caddyfile      = file("${path.module}/Caddyfile")
-    docker_compose = file("${path.module}/docker-compose.yml")
-    aws_region     = var.aws_region
-    ecr_url        = aws_ecr_repository.twilio_bridge.repository_url
-    env_file       = templatefile("${path.module}/.env.tpl", {
-      aws_region   = var.aws_region
-      s3_bucket    = aws_s3_bucket.transcripts.id
-      bridge_image = "${aws_ecr_repository.twilio_bridge.repository_url}:latest"
+    caddyfile          = file("${path.module}/Caddyfile")
+    docker_compose     = file("${path.module}/docker-compose.yml")
+    aws_region         = var.aws_region
+    ecr_url            = aws_ecr_repository.twilio_bridge.repository_url
+    tailscale_auth_key = var.tailscale_auth_key
+    env_file           = templatefile("${path.module}/.env.tpl", {
+      aws_region        = var.aws_region
+      s3_bucket         = aws_s3_bucket.transcripts.id
+      bridge_image      = "${aws_ecr_repository.twilio_bridge.repository_url}:latest"
+      twilio_auth_token = var.twilio_auth_token
     })
   })
 
