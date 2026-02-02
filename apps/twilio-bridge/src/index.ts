@@ -6,12 +6,15 @@
  */
 
 import express from 'express';
+import { createServer } from 'http';
 import { config, logConfig } from './config.js';
 import { getServiceInfo, getHealth } from './routes/health.js';
 import { handleWebhook, handleStatusCallback } from './routes/twilio.js';
 import { validateTwilioSignature } from './middleware/twilioAuth.js';
+import { initMediaStreamServer } from './services/mediaStream.js';
 
 const app = express();
+const server = createServer(app);
 
 // Middleware
 app.use(express.json());
@@ -31,8 +34,11 @@ app.get('/health', getHealth);
 app.post('/twilio/webhook', validateTwilioSignature, handleWebhook);
 app.post('/twilio/status', validateTwilioSignature, handleStatusCallback);
 
+// Initialize WebSocket server for Twilio Media Streams
+initMediaStreamServer(server);
+
 // Start server
-app.listen(config.port, '0.0.0.0', () => {
+server.listen(config.port, '0.0.0.0', () => {
   console.log('='.repeat(50));
   console.log('Twilio Bridge Server Starting');
   console.log('='.repeat(50));

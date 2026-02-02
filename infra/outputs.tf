@@ -54,8 +54,7 @@ output "docker_push_commands" {
   EOT
 }
 
-# Uncomment when github_oidc.tf is enabled
-# output "github_actions_role_arn" {
-#   description = "ARN of the IAM role for GitHub Actions (add as AWS_ROLE_ARN secret in GitHub)"
-#   value       = aws_iam_role.github_actions.arn
-# }
+output "github_actions_role_arn" {
+  description = "ARN of the IAM role for GitHub Actions (add as AWS_ROLE_ARN secret in GitHub)"
+  value       = aws_iam_role.github_actions.arn
+}

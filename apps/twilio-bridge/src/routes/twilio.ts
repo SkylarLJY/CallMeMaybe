@@ -4,6 +4,7 @@
 
 import type { Request, Response } from 'express';
 import { saveTranscript } from '../services/s3.js';
+import { config } from '../config.js';
 
 /** Twilio sends form-urlencoded data */
 type TwilioBody = Record<string, string | undefined>;
@@ -20,10 +21,15 @@ export interface TranscriptData {
   summary?: string;
 }
 
-function twimlResponse(message: string): string {
+/**
+ * Generate TwiML to connect call to Media Stream
+ */
+function twimlMediaStream(websocketUrl: string): string {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say>${message}</Say>
+  <Connect>
+    <Stream url="${websocketUrl}" />
+  </Connect>
 </Response>`;
 }
 
@@ -41,9 +47,16 @@ export async function handleWebhook(
     status: CallStatus,
   });
 
-  // TODO: Integrate with OpenAI Realtime API for actual call handling
+  // Construct WebSocket URL for media stream
+  // Use wss:// for production, ws:// for local development
+  const protocol = config.nodeEnv === 'production' ? 'wss' : 'ws';
+  const host = req.headers.host || 'localhost:8080';
+  const websocketUrl = `${protocol}://${host}/media-stream`;
+
+  console.log('[twilio/webhook] Connecting to media stream:', websocketUrl);
+
   res.type('text/xml');
-  res.send(twimlResponse('Hello! This is a test response from the Twilio bridge.'));
+  res.send(twimlMediaStream(websocketUrl));
 }
 
 /** POST /twilio/status - Handle Twilio status callbacks */
