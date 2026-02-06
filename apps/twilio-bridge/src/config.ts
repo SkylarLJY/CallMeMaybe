@@ -9,6 +9,15 @@ export interface Config {
   awsRegion: string;
   nodeEnv: string;
   twilioAuthToken: string | undefined;
+  // OpenAI configuration
+  openaiApiKey: string | undefined;
+  // Agent persona
+  agentOwnerName: string;
+  agentRole: string | undefined;
+  agentEmail: string | undefined;
+  agentSpecialInstructions: string | undefined;
+  // Public hostname for WebSocket URL (optional, auto-detected if not set)
+  publicHost: string | undefined;
 }
 
 function loadConfig(): Config {
@@ -19,6 +28,15 @@ function loadConfig(): Config {
     awsRegion: process.env['AWS_REGION'] ?? 'us-west-2',
     nodeEnv: process.env['NODE_ENV'] ?? 'development',
     twilioAuthToken: process.env['TWILIO_AUTH_TOKEN'],
+    // OpenAI configuration
+    openaiApiKey: process.env['OPENAI_API_KEY'],
+    // Agent persona
+    agentOwnerName: process.env['AGENT_OWNER_NAME'] ?? 'the owner',
+    agentRole: process.env['AGENT_ROLE'],
+    agentEmail: process.env['AGENT_EMAIL'],
+    agentSpecialInstructions: process.env['AGENT_SPECIAL_INSTRUCTIONS'],
+    // Public hostname
+    publicHost: process.env['PUBLIC_HOST'],
   };
 }
 
@@ -31,4 +49,7 @@ export function logConfig(): void {
   console.log('[config] AWS Region:', config.awsRegion);
   console.log('[config] Environment:', config.nodeEnv);
   console.log('[config] Twilio Auth:', config.twilioAuthToken ? 'CONFIGURED' : 'NOT CONFIGURED');
+  console.log('[config] OpenAI API Key:', config.openaiApiKey ? 'CONFIGURED' : 'NOT CONFIGURED');
+  console.log('[config] Agent Owner:', config.agentOwnerName);
+  console.log('[config] Public Host:', config.publicHost ?? 'AUTO-DETECT');
 }

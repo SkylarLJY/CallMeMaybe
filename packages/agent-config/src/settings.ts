@@ -19,7 +19,7 @@ export interface SessionConfig {
 
 export const DEFAULT_SESSION_CONFIG: SessionConfig = {
   model: "gpt-4o-realtime-preview",
-  voice: "verse",
+  voice: "shimmer",
   modalities: ["text", "audio"],
   input_audio_transcription: {
     model: "whisper-1",

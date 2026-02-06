@@ -6,6 +6,9 @@
 import { WebSocket, WebSocketServer } from 'ws';
 import type { IncomingMessage } from 'http';
 import type { Server } from 'http';
+import { OpenAIRealtimeSession } from './openaiRealtimeService.js';
+import { config } from '../config.js';
+import type { AgentPersona } from '@callmemaybe/agent-config';
 
 /** Twilio Media Stream message types */
 interface TwilioConnectedMessage {
@@ -66,6 +69,7 @@ export interface CallSession {
   callSid: string;
   ws: WebSocket;
   startTime: Date;
+  openaiSession: OpenAIRealtimeSession | null;
 }
 
 /** Map of active call sessions by streamSid */
@@ -95,26 +99,39 @@ function handleConnection(ws: WebSocket, req: IncomingMessage): void {
             mediaFormat: message.start.mediaFormat,
           });
 
+          const persona: AgentPersona = {
+            ownerName: config.agentOwnerName,
+            ...(config.agentRole !== undefined && { role: config.agentRole }),
+            ...(config.agentEmail !== undefined && { shareEmail: config.agentEmail }),
+            ...(config.agentSpecialInstructions !== undefined && { specialInstructions: config.agentSpecialInstructions }),
+          };
+
+          let openaiSession: OpenAIRealtimeSession | null = null;
+          if (config.openaiApiKey) {
+            openaiSession = new OpenAIRealtimeSession(
+              config.openaiApiKey,
+              message.start.streamSid,
+              persona,
+            );
+            openaiSession.connect();
+          } else {
+            console.warn('[media-stream] OPENAI_API_KEY not configured - audio will not be processed');
+          }
+
           session = {
             streamSid: message.start.streamSid,
             callSid: message.start.callSid,
             ws,
             startTime: new Date(),
+            openaiSession,
           };
           activeSessions.set(message.start.streamSid, session);
           break;
 
         case 'media':
-          // Audio data received (base64 encoded mulaw)
-          // For now, just log that we received it
-          if (parseInt(message.sequenceNumber) % 100 === 0) {
-            console.log('[media-stream] Received audio chunk:', {
-              streamSid: message.streamSid,
-              sequence: message.sequenceNumber,
-              payloadSize: message.media.payload.length,
-            });
+          if (session?.openaiSession) {
+            session.openaiSession.sendAudio(message.media.payload);
           }
-          // TODO: Forward to OpenAI Realtime API
           break;
 
         case 'stop':
@@ -126,6 +143,7 @@ function handleConnection(ws: WebSocket, req: IncomingMessage): void {
           if (session) {
             const duration = (Date.now() - session.startTime.getTime()) / 1000;
             console.log('[media-stream] Call duration:', duration.toFixed(1), 'seconds');
+            session.openaiSession?.close();
             activeSessions.delete(message.streamSid);
           }
           break;
@@ -141,6 +159,7 @@ function handleConnection(ws: WebSocket, req: IncomingMessage): void {
   ws.on('close', (code, reason) => {
     console.log('[media-stream] WebSocket closed:', code, reason.toString());
     if (session) {
+      session.openaiSession?.close();
       activeSessions.delete(session.streamSid);
     }
   });

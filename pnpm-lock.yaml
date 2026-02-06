@@ -47,9 +47,15 @@ importers:
       '@aws-sdk/client-s3':
         specifier: ^3.500.0
         version: 3.975.0
+      '@callmemaybe/agent-config':
+        specifier: workspace:*
+        version: link:../../packages/agent-config
       express:
         specifier: ^5.2.1
         version: 5.2.1
+      openai:
+        specifier: ^6.16.0
+        version: 6.16.0(ws@8.19.0)(zod@4.3.5)
       twilio:
         specifier: ^5.12.0
         version: 5.12.0

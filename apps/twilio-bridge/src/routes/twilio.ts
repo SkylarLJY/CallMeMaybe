@@ -50,7 +50,7 @@ export async function handleWebhook(
   // Construct WebSocket URL for media stream
   // Use wss:// for production, ws:// for local development
   const protocol = config.nodeEnv === 'production' ? 'wss' : 'ws';
-  const host = req.headers.host || 'localhost:8080';
+  const host = config.publicHost || req.headers.host || 'localhost:8080';
   const websocketUrl = `${protocol}://${host}/media-stream`;
 
   console.log('[twilio/webhook] Connecting to media stream:', websocketUrl);
