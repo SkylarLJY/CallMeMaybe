@@ -73,6 +73,15 @@ resource "aws_iam_role_policy" "ec2_policy" {
           "ecr:BatchGetImage"
         ]
         Resource = aws_ecr_repository.twilio_bridge.arn
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:PutItem",
+          "dynamodb:GetItem",
+          "dynamodb:Query"
+        ]
+        Resource = aws_dynamodb_table.calls.arn
       }
     ]
   })
@@ -101,6 +110,7 @@ resource "aws_instance" "twilio_bridge" {
     env_file           = templatefile("${path.module}/.env.tpl", {
       aws_region        = var.aws_region
       s3_bucket         = aws_s3_bucket.transcripts.id
+      dynamodb_table    = aws_dynamodb_table.calls.name
       bridge_image      = "${aws_ecr_repository.twilio_bridge.repository_url}:latest"
       twilio_auth_token = var.twilio_auth_token
     })

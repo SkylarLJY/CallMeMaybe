@@ -1,6 +1,7 @@
 AWS_REGION=${aws_region}
 S3_BUCKET=${s3_bucket}
 S3_TRANSCRIPT_PREFIX=transcripts/
+DYNAMODB_TABLE=${dynamodb_table}
 PORT=8080
 NODE_ENV=production
 BRIDGE_IMAGE=${bridge_image}

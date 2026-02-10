@@ -58,3 +58,13 @@ output "github_actions_role_arn" {
   description = "ARN of the IAM role for GitHub Actions (add as AWS_ROLE_ARN secret in GitHub)"
   value       = aws_iam_role.github_actions.arn
 }
+
+output "dynamodb_table_name" {
+  description = "DynamoDB table name for call metadata"
+  value       = aws_dynamodb_table.calls.name
+}
+
+output "dynamodb_table_arn" {
+  description = "DynamoDB table ARN"
+  value       = aws_dynamodb_table.calls.arn
+}
